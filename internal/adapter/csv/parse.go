@@ -11,6 +11,18 @@ import (
 	"github.com/DovCaio/saldo/internal/transaction"
 )
 
+type Parser struct{}
+
+func NewParser() *Parser {
+	return &Parser{}
+}
+
+func (p *Parser) Parse(
+	r io.Reader,
+) ([]transaction.Transaction, error) {
+	return ParseCSV(r)
+}
+
 func ParseCSV(r io.Reader) ([]transaction.Transaction, error) {
 	reader := csv.NewReader(r)
 
