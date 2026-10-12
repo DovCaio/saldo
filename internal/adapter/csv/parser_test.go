@@ -109,3 +109,38 @@ func TestParseCSVTransactionFields(t *testing.T) {
 		t.Errorf("got type %q, want %q", tx.Type, transaction.Income)
 	}
 }
+
+
+
+func TestParseAmountCents(t *testing.T) {
+	tests := []struct {
+		input   string
+		want    int64
+		wantErr bool
+	}{
+		{"5000.00", 500000, false},
+		{"150.50", 15050, false},
+		{"10", 1000, false},
+		{"1.5", 150, false},
+		{"0.01", 1, false},
+		{"1.999", 0, true},
+		{"abc", 0, true},
+		{"", 0, true},
+		{"-10.00", 0, true},
+		{"1,50", 0, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			got, err := parseAmountCents(tt.input)
+
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("error = %v, wantErr = %v", err, tt.wantErr)
+			}
+
+			if err == nil && got != tt.want {
+				t.Errorf("got %d cents, want %d", got, tt.want)
+			}
+		})
+	}
+}
