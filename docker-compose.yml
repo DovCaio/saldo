@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: saldo-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: saldo
+      POSTGRES_USER: saldo
+      POSTGRES_PASSWORD: saldo
+    ports:
+      - "5432:5432"
+    volumes:
+      - saldo_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U saldo -d saldo"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  saldo_data:

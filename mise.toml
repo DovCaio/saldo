@@ -1,0 +1,14 @@
+[tools]
+go = "1.25"
+
+[env]
+_.file = ".env"
+
+[tasks]
+up = "docker compose up -d"
+down = "docker compose down"
+logs = "docker compose logs -f postgres"
+db = "docker compose exec postgres psql -U saldo -d saldo"
+run = "go run ./cmd/api"
+test = "go test ./..."
+check = "go vet ./..."
