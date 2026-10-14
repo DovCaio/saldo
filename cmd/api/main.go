@@ -20,11 +20,17 @@ import (
 func main() {
 
 	databaseURL := os.Getenv("DATABASE_URL")
-	if databaseURL == "" {
-		log.Fatal("DATABASE_URL is required")
+	testDatabaseURL := os.Getenv("TEST_DATABASE_URL")
+	if databaseURL == "" && testDatabaseURL == ""{
+		log.Fatal("DATABASE_URL or TEST_DATABASE_URL is required")
 	}
 
-	db, err := sql.Open("pgx", databaseURL)
+	url := databaseURL
+	if url == "" {
+		url = testDatabaseURL
+	}
+	println(url)
+	db, err := sql.Open("pgx", url)
 	if err != nil {
 		log.Fatal(err)
 	}
