@@ -11,7 +11,8 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 
 	"github.com/DovCaio/saldo/internal/adapter/csv"
-	httpadapter "github.com/DovCaio/saldo/internal/adapter/http"
+	healthadapter "github.com/DovCaio/saldo/internal/adapter/http/health"
+	import_handler_adapter "github.com/DovCaio/saldo/internal/adapter/http/import_handler"
 	"github.com/DovCaio/saldo/internal/adapter/postgres"
 	"github.com/DovCaio/saldo/internal/application"
 	"github.com/DovCaio/saldo/internal/transaction"
@@ -42,7 +43,7 @@ func main() {
 	
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /health", httpadapter.NewHealthHandler())
+	mux.HandleFunc("GET /health", healthadapter.NewHealthHandler())
 
 	repository := postgres.NewTransactionRepository(db)
 	service := transaction.NewService(repository)
@@ -53,7 +54,7 @@ func main() {
 		service,
 	)
 
-	importHandler := httpadapter.NewImportHandler(importTransactions)
+	importHandler := import_handler_adapter.NewImportHandler(importTransactions)
 	
 	mux.Handle("POST /transactions/import", importHandler)
 	server := &http.Server{
