@@ -49,6 +49,13 @@ func (f *fakeRepository) SaveBatch(
 	return nil
 }
 
+func (f *fakeRepository) FindAll(
+	ctx context.Context,
+	filter transaction.TransactionFilter,
+) ([]transaction.Transaction, error){
+	return nil, nil
+}
+
 func TestImportTransactionsExecute(t *testing.T) {
 	tests := []struct {
 		name         string

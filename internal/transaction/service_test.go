@@ -25,6 +25,13 @@ func (f *fakeRepository) SaveBatch(
     return nil
 }
 
+func (f *fakeRepository) FindAll(
+    ctx context.Context,
+    filter TransactionFilter,
+) ([]Transaction, error) {
+    return nil, nil
+}
+
 func TestServiceRegister(t *testing.T) {
     repository := &fakeRepository{}
     service := NewService(repository)
