@@ -13,6 +13,7 @@ import (
 	"github.com/DovCaio/saldo/internal/adapter/csv"
 	healthadapter "github.com/DovCaio/saldo/internal/adapter/http/health"
 	import_handler_adapter "github.com/DovCaio/saldo/internal/adapter/http/import_handler"
+	list_transaction_handler_adapter "github.com/DovCaio/saldo/internal/adapter/http/list_transactions"
 	"github.com/DovCaio/saldo/internal/adapter/postgres"
 	"github.com/DovCaio/saldo/internal/application"
 	"github.com/DovCaio/saldo/internal/transaction"
@@ -54,9 +55,16 @@ func main() {
 		service,
 	)
 
+	listTransactions := application.NewFindAllTransaction(
+		service,
+	)
+
 	importHandler := import_handler_adapter.NewImportHandler(importTransactions)
+	listTransactionsHandler := list_transaction_handler_adapter.NewListTransactionsHandler(listTransactions)
 	
 	mux.Handle("POST /transactions/import", importHandler)
+	mux.Handle("GET /transactions", listTransactionsHandler)
+	
 	server := &http.Server{
 		Addr: ":8080",
 		Handler: mux,
