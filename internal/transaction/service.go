@@ -29,3 +29,9 @@ func (s *Service) ImportTransactions(
 
     return s.repository.SaveBatch(ctx, transactions)
 }
+
+func (s *Service) FindAll(ctx context.Context, filter TransactionFilter) ([]Transaction, error){
+
+    return s.repository.FindAll(ctx, filter)
+
+}
