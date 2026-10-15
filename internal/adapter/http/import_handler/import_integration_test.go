@@ -16,7 +16,7 @@ import (
 	"time"
 
 	csvadapter "github.com/DovCaio/saldo/internal/adapter/csv"
-	httpadapter "github.com/DovCaio/saldo/internal/adapter/http"
+	import_http "github.com/DovCaio/saldo/internal/adapter/http/import_handler"
 	"github.com/DovCaio/saldo/internal/adapter/postgres"
 	"github.com/DovCaio/saldo/internal/application"
 	"github.com/DovCaio/saldo/internal/transaction"
@@ -53,7 +53,7 @@ func setupImportIntegration(t *testing.T) (*sql.DB, http.Handler) {
 	service := transaction.NewService(repository)
 	parser := csvadapter.NewParser()
 	useCase := application.NewImportTransactions(parser, service)
-	handler := httpadapter.NewImportHandler(useCase)
+	handler := import_http.NewImportHandler(useCase)
 
 	mux := http.NewServeMux()
 	mux.Handle("POST /transactions/import", handler)
