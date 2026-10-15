@@ -6,8 +6,8 @@ import (
 	"github.com/DovCaio/saldo/internal/transaction"
 )
 
-type ListTransacion interface {
-	FindAll(filter transaction.TransactionFilter) (transaction.Transaction, error)
+type ListTransation interface {
+	Execute(ctx context.Context, filter transaction.TransactionFilter) ([]transaction.Transaction, error)
 }
 
 type FindAllTransaction struct {
@@ -20,7 +20,6 @@ func NewFindAllTransaction(service *transaction.Service) *FindAllTransaction {
 	}
 
 }
-
 
 func (f *FindAllTransaction) Execute(ctx context.Context,
 	filter transaction.TransactionFilter) ([]transaction.Transaction, error) {
