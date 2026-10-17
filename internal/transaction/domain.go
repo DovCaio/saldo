@@ -14,6 +14,10 @@ const (
 	Expense TransactionType = "EXPENSE"
 )
 
+type TransactionGroupBy string
+
+
+
 var (
 	ErrInvalidDate        = errors.New("invalid transaction date")
 	ErrEmptyDescription   = errors.New("description cannot be empty")
