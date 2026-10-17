@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/DovCaio/saldo/internal/adapter/dto"
 )
 
 type fakeRepository struct {
@@ -29,6 +31,12 @@ func (f *fakeRepository) FindAll(
     ctx context.Context,
     filter TransactionFilter,
 ) ([]Transaction, error) {
+    return nil, nil
+}
+
+func (f *fakeRepository) Summary(
+    ctx context.Context,
+    filter TransactionSummaryFilter) (*dto.SummaryResponse, error) {
     return nil, nil
 }
 

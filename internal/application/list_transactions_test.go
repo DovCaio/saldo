@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/DovCaio/saldo/internal/adapter/dto"
 	"github.com/DovCaio/saldo/internal/transaction"
 )
 
@@ -33,6 +34,12 @@ func (m *transactionFinderMock) FindAll(
 	m.gotFilter = filter
 
 	return m.result, m.err
+}
+
+func (m *transactionFinderMock) Summary(
+    ctx context.Context,
+    filter transaction.TransactionSummaryFilter) (*dto.SummaryResponse, error) {
+    return nil, nil
 }
 
 func TestFindAllTransaction_Execute_Success(t *testing.T) {

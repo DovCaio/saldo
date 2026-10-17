@@ -3,6 +3,8 @@ package transaction
 import (
 	"context"
 	"time"
+
+	"github.com/DovCaio/saldo/internal/adapter/dto"
 )
 
 type TransactionFilter struct {
@@ -25,4 +27,9 @@ type Repository interface {
         ctx context.Context,
         filter TransactionFilter,
     ) ([]Transaction, error)
+
+    Summary(
+    ctx context.Context,
+    filter TransactionSummaryFilter,
+    ) (*dto.SummaryResponse, error)
 }

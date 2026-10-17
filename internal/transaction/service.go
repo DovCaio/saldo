@@ -1,6 +1,10 @@
 package transaction
 
-import "context"
+import (
+	"context"
+
+	"github.com/DovCaio/saldo/internal/adapter/dto"
+)
 
 type Service struct {
     repository Repository
@@ -34,4 +38,8 @@ func (s *Service) FindAll(ctx context.Context, filter TransactionFilter) ([]Tran
 
     return s.repository.FindAll(ctx, filter)
 
+}
+
+func (s *Service) Summary(ctx context.Context, filter TransactionSummaryFilter) (*dto.SummaryResponse, error) {
+    return s.repository.Summary(ctx, filter)
 }

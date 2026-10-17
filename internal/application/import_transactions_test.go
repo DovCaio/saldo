@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/DovCaio/saldo/internal/adapter/dto"
 	"github.com/DovCaio/saldo/internal/transaction"
 )
 
@@ -55,6 +56,17 @@ func (f *fakeRepository) FindAll(
 ) ([]transaction.Transaction, error){
 	return nil, nil
 }
+
+func (f *fakeRepository) Summary(
+
+    ctx context.Context,
+
+    filter transaction.TransactionSummaryFilter) (*dto.SummaryResponse, error) {
+
+    return nil, nil
+
+}
+
 
 func TestImportTransactionsExecute(t *testing.T) {
 	tests := []struct {
