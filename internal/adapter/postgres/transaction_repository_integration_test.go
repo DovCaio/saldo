@@ -7,9 +7,11 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"reflect"
 	"testing"
 	"time"
 
+	"github.com/DovCaio/saldo/internal/adapter/dto"
 	"github.com/DovCaio/saldo/internal/transaction"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
@@ -392,4 +394,211 @@ func TestFindAll_ReturnsEmptySliceWhenNoMatches(t *testing.T) {
 	if len(got) != 0 {
 		t.Errorf("expected no transactions, got %d", len(got))
 	}
+}
+
+func insertSummaryFixtures(t *testing.T, db *sql.DB, prefix string) {
+	t.Helper()
+
+	ctx := context.Background()
+
+	fixtures := []struct {
+		date        string
+		typ         transaction.TransactionType
+		amountCents int64
+		externalID  string
+	}{
+		{"2099-01-05", transaction.Income, 10000, prefix + "-1"},
+		{"2099-01-05", transaction.Expense, 2500, prefix + "-2"},
+		{"2099-01-20", transaction.Expense, 1000, prefix + "-3"},
+		{"2099-02-03", transaction.Income, 5000, prefix + "-4"},
+		{"2099-02-03", transaction.Expense, 3000, prefix + "-5"},
+	}
+	//insertTransaction(t, db, "2026-10-03", third, 3000, transaction.Expense)
+
+	for _, fixture := range fixtures {
+		_, err := db.ExecContext(ctx, `
+			INSERT INTO transactions (
+				transaction_date,
+				type,
+				amount_cents,
+				description,
+				external_id
+			)
+			VALUES ($1, $2, $3, $4, $5)
+		`,
+			fixture.date,
+			fixture.typ,
+			fixture.amountCents,
+			"Integration test "+fixture.externalID,
+			fixture.externalID,
+		)
+		if err != nil {
+			t.Fatalf("inserting fixture %s: %v", fixture.externalID, err)
+		}
+	}
+
+	t.Cleanup(func() {
+		_, err := db.ExecContext(ctx,
+			`DELETE FROM transactions WHERE external_id LIKE $1`,
+			prefix+"-%",
+		)
+		if err != nil {
+			t.Errorf("cleaning summary fixtures: %v", err)
+		}
+	})
+}
+
+func datePtr(value string) *time.Time {
+	date, err := time.Parse("2006-01-02", value)
+	if err != nil {
+		panic(err)
+	}
+	return &date
+}
+
+func assertSummaryTotals(
+	t *testing.T,
+	got *dto.SummaryResponse,
+	income, expense, balance int64,
+) {
+	t.Helper()
+
+	if got.TotalIncome != income {
+		t.Errorf("TotalIncome = %d, want %d", got.TotalIncome, income)
+	}
+	if got.TotalExpense != expense {
+		t.Errorf("TotalExpense = %d, want %d", got.TotalExpense, expense)
+	}
+	if got.Balance != balance {
+		t.Errorf("Balance = %d, want %d", got.Balance, balance)
+	}
+}
+
+func TestTransactionRepository_Summary(t *testing.T) {
+	db, repository := openTestDB(t)
+	prefix := fmt.Sprintf("summary-test-%d", time.Now().UnixNano())
+	insertSummaryFixtures(t, db, prefix)
+
+	ctx := context.Background()
+	from := datePtr("2099-01-01")
+	to := datePtr("2099-02-28")
+
+	t.Run("monthly grouping", func(t *testing.T) {
+		got, err := repository.Summary(ctx, transaction.TransactionSummaryFilter{
+			DateFrom: from,
+			DateTo:   to,
+			GroupBy:  transaction.MONTH,
+		})
+		if err != nil {
+			t.Fatalf("Summary() error = %v", err)
+		}
+
+		assertSummaryTotals(t, got, 15000, 6500, 8500)
+
+		want := []dto.Serie{
+			{Date: "2099-01", Income: 10000, Expense: 3500},
+			{Date: "2099-02", Income: 5000, Expense: 3000},
+		}
+
+		if !reflect.DeepEqual(got.Series, want) {
+			t.Errorf("Series = %#v, want %#v", got.Series, want)
+		}
+	})
+
+	t.Run("daily grouping", func(t *testing.T) {
+		got, err := repository.Summary(ctx, transaction.TransactionSummaryFilter{
+			DateFrom: from,
+			DateTo:   to,
+			GroupBy:  transaction.DAY,
+		})
+		if err != nil {
+			t.Fatalf("Summary() error = %v", err)
+		}
+
+		assertSummaryTotals(t, got, 15000, 6500, 8500)
+
+		want := []dto.Serie{
+			{Date: "2099-01-05", Income: 10000, Expense: 2500},
+			{Date: "2099-01-20", Income: 0, Expense: 1000},
+			{Date: "2099-02-03", Income: 5000, Expense: 3000},
+		}
+
+		if !reflect.DeepEqual(got.Series, want) {
+			t.Errorf("Series = %#v, want %#v", got.Series, want)
+		}
+	})
+
+	t.Run("yearly grouping", func(t *testing.T) {
+		got, err := repository.Summary(ctx, transaction.TransactionSummaryFilter{
+			DateFrom: from,
+			DateTo:   to,
+			GroupBy:  transaction.YEAR,
+		})
+		if err != nil {
+			t.Fatalf("Summary() error = %v", err)
+		}
+
+		assertSummaryTotals(t, got, 15000, 6500, 8500)
+
+		want := []dto.Serie{
+			{Date: "2099", Income: 15000, Expense: 6500},
+		}
+
+		if !reflect.DeepEqual(got.Series, want) {
+			t.Errorf("Series = %#v, want %#v", got.Series, want)
+		}
+	})
+
+	t.Run("date filters", func(t *testing.T) {
+		februaryFrom := datePtr("2099-02-01")
+		februaryTo := datePtr("2099-02-28")
+
+		got, err := repository.Summary(ctx, transaction.TransactionSummaryFilter{
+			DateFrom: februaryFrom,
+			DateTo:   februaryTo,
+			GroupBy:  transaction.MONTH,
+		})
+		if err != nil {
+			t.Fatalf("Summary() error = %v", err)
+		}
+
+		assertSummaryTotals(t, got, 5000, 3000, 2000)
+
+		if len(got.Series) != 1 || got.Series[0].Date != "2099-02" {
+			t.Errorf("unexpected February series: %#v", got.Series)
+		}
+	})
+
+	t.Run("empty period", func(t *testing.T) {
+		marchFrom := datePtr("2099-03-01")
+		marchTo := datePtr("2099-03-31")
+
+		got, err := repository.Summary(ctx, transaction.TransactionSummaryFilter{
+			DateFrom: marchFrom,
+			DateTo:   marchTo,
+			GroupBy:  transaction.MONTH,
+		})
+		if err != nil {
+			t.Fatalf("Summary() error = %v", err)
+		}
+
+		assertSummaryTotals(t, got, 0, 0, 0)
+
+		if len(got.Series) != 0 {
+			t.Errorf("Series length = %d, want 0", len(got.Series))
+		}
+	})
+
+	t.Run("invalid grouping", func(t *testing.T) {
+		got, err := repository.Summary(ctx, transaction.TransactionSummaryFilter{
+			GroupBy: transaction.SummaryGroupBy("week"),
+		})
+
+		if err == nil {
+			t.Fatal("expected error for invalid grouping")
+		}
+		if got != nil {
+			t.Errorf("response = %#v, want nil", got)
+		}
+	})
 }
