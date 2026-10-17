@@ -6,6 +6,18 @@ import (
 	"github.com/DovCaio/saldo/internal/adapter/dto"
 )
 
+type ServiceTransaction interface {
+
+    ImportTransactions(
+    ctx context.Context,
+    transactions []Transaction,
+    ) error 
+
+    FindAll(ctx context.Context, filter TransactionFilter) ([]Transaction, error)
+
+    Summary(ctx context.Context, filter TransactionSummaryFilter) (*dto.SummaryResponse, error)
+}
+
 type Service struct {
     repository Repository
 }
