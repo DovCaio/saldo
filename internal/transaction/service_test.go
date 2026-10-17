@@ -13,6 +13,8 @@ import (
 type fakeRepository struct {
     saved  []Transaction
     err    error
+	called bool
+	summaryResult *dto.SummaryResponse
 }
 
 func (f *fakeRepository) SaveBatch(
@@ -23,6 +25,8 @@ func (f *fakeRepository) SaveBatch(
         return f.err
     }
 
+	f.called = true
+
     f.saved = append(f.saved, tx...)
     return nil
 }
@@ -31,17 +35,25 @@ func (f *fakeRepository) FindAll(
     ctx context.Context,
     filter TransactionFilter,
 ) ([]Transaction, error) {
+	f.called = true
+
     return nil, nil
 }
 
 func (f *fakeRepository) Summary(
     ctx context.Context,
     filter TransactionSummaryFilter) (*dto.SummaryResponse, error) {
-    return nil, nil
+	f.called = true
+
+	if f.err != nil {
+		return nil, f.err
+	}
+
+    return f.summaryResult, nil
 }
 
 func TestServiceRegister(t *testing.T) {
-    repository := &fakeRepository{}
+    repository := &fakeRepository{called: false}
     service := NewService(repository)
 
     tx, err := NewTransaction(
@@ -174,4 +186,74 @@ func TestImportTransactions(t *testing.T) {
 			}
 		})
 	}
+}
+
+
+func TestSumarySucessful(t *testing.T){
+	expectedResult := &dto.SummaryResponse{
+			TotalIncome: 1000,
+			TotalExpense: 200,
+			Balance: 800,
+			Series: []dto.Serie{
+				{Date: "2026-10-02", Income: 1000, Expense: 200},
+			},
+	}
+	
+	repository := &fakeRepository{
+		called: false,
+		summaryResult: expectedResult,
+	}
+	service := NewService(repository)
+
+	dateFrom := time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC)
+	dateTo := time.Date(2026, 10, 3, 0, 0, 0, 0, time.UTC)
+
+	filter := TransactionSummaryFilter{
+		DateFrom: &dateFrom,
+		DateTo: &dateTo,
+		GroupBy: "Day",
+	}
+
+	result, err := service.Summary(context.Background(), filter)
+
+	if (err != nil) {
+		t.Fatalf("some error ocurred")
+	}
+
+	if !repository.called {
+		t.Fatalf("repository wasnt called")
+	}
+
+ 	if !reflect.DeepEqual(result, expectedResult) {
+        t.Errorf("expected %#v, got %#v", expectedResult, result)
+    }
+}
+
+func TestSumaryFail(t *testing.T){
+
+	repository := &fakeRepository{
+		err:  errors.New("error mocking"),
+	}
+
+	dateFrom := time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC)
+	dateTo := time.Date(2026, 10, 3, 0, 0, 0, 0, time.UTC)
+
+	filter := TransactionSummaryFilter{
+		DateFrom: &dateFrom,
+		DateTo: &dateTo,
+		GroupBy: "Day",
+	}
+
+	service := NewService(repository)
+
+	result, err := service.Summary(context.Background(), filter)
+
+	if result != nil {
+       t.Errorf("result must not be returned when an error ocurred")		
+	}
+
+	if err == nil {
+		t.Errorf("error must be returned when an error ocurred")		
+	}
+
 }
