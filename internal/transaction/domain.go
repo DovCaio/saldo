@@ -14,8 +14,6 @@ const (
 	Expense TransactionType = "EXPENSE"
 )
 
-type TransactionGroupBy string
-
 
 
 var (

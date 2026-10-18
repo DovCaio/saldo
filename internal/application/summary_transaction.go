@@ -8,7 +8,7 @@ import (
 )
 
 type Summary interface {
-	Execute(ctx context.Context, filter transaction.TransactionSummaryFilter)
+	Execute(ctx context.Context, filter transaction.TransactionSummaryFilter) (*dto.SummaryResponse, error)
 }
 
 type SummaryTransactions struct {

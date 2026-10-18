@@ -122,13 +122,12 @@ func (h *ListTransactionsHandler) ServeHTTP(
 
 	transactions, err := h.useCase.Execute(r.Context(), filter)
 	if err != nil {
-		http.Error(w, "failed to list transactions", http.StatusInternalServerError)
+		http.Error(w, "failed to list transactions", http.StatusInternalServerError)//this fo sure is wrong, we have to take the real error and return
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(transactions); err != nil {
-		// A resposta pode já ter começado a ser enviada.
 		return
 	}
 }
