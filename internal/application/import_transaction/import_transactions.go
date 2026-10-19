@@ -7,6 +7,11 @@ import (
 	"github.com/DovCaio/saldo/internal/transaction"
 )
 
+type ImportTransactionsUseCase interface {
+    Execute(ctx context.Context, r io.Reader) error
+}
+
+
 type TransactionParser interface {
 	Parse(r io.Reader) ([]transaction.Transaction, error)
 }
