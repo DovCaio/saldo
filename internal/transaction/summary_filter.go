@@ -5,9 +5,9 @@ import "time"
 type SummaryGroupBy string
 
 const (
-    DAY   SummaryGroupBy = "day"
-    MONTH SummaryGroupBy = "month"
-    YEAR  SummaryGroupBy = "year"
+    DAY   SummaryGroupBy = "DAY"
+    MONTH SummaryGroupBy = "MONTH"
+    YEAR  SummaryGroupBy = "YEAR"
 )
 
 type TransactionSummaryFilter struct {

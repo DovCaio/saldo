@@ -61,6 +61,7 @@ func (h *SummaryTransactionHandler) ServeHTTP(
 				return
 
 		}
+		filter.GroupBy = groupBy
 	}
 
 	if filter.DateFrom != nil && filter.DateTo != nil && filter.DateFrom.After(*filter.DateTo)  {

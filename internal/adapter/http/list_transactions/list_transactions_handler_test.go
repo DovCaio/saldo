@@ -58,6 +58,8 @@ func TestListTransactionsHandler_Success(t *testing.T) {
 		t.Errorf("expected application/json, got %q", contentType)
 	}
 
+	
+
 	var got []transaction.Transaction
 	if err := json.NewDecoder(rec.Body).Decode(&got); err != nil {
 		t.Fatalf("decoding response: %v", err)
