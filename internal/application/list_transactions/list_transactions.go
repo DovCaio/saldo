@@ -6,7 +6,7 @@ import (
 	"github.com/DovCaio/saldo/internal/transaction"
 )
 
-type ListTransation interface {
+type ListTransationUseCase interface {
 	Execute(ctx context.Context, filter transaction.TransactionFilter) ([]transaction.Transaction, error)
 }
 

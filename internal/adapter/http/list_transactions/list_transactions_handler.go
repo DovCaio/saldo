@@ -1,28 +1,22 @@
 package http
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
 	"time"
 
+	list "github.com/DovCaio/saldo/internal/application/list_transactions"
 	"github.com/DovCaio/saldo/internal/transaction"
 )
 
-type ListTransactionsUseCase interface {
-	Execute(
-		ctx context.Context,
-		filter transaction.TransactionFilter,
-	) ([]transaction.Transaction, error)
-}
 
 type ListTransactionsHandler struct {
-	useCase ListTransactionsUseCase
+	useCase list.ListTransationUseCase
 }
 
 func NewListTransactionsHandler(
-	useCase ListTransactionsUseCase,
+	useCase list.ListTransationUseCase,
 ) *ListTransactionsHandler {
 	return &ListTransactionsHandler{
 		useCase: useCase,
