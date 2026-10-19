@@ -2,13 +2,14 @@ package http
 
 import (
 	"context"
-	"errors"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/DovCaio/saldo/internal/transaction"
 )
 
 type fakeImportUseCase struct {
@@ -72,7 +73,7 @@ func TestImportHandler_Success(t *testing.T) {
 
 func TestImportHandler_UseCaseError(t *testing.T) {
 	fake := &fakeImportUseCase{
-		err: errors.New("database failure"),
+		err: transaction.ErrDuplicateInBatch,
 	}
 	handler := NewImportHandler(fake)
 
@@ -109,10 +110,10 @@ func TestImportHandler_UseCaseError(t *testing.T) {
 		t.Fatal("expected use case to be called")
 	}
 
-	if rec.Code != http.StatusInternalServerError {
+	if rec.Code != http.StatusConflict {
 		t.Errorf(
 			"expected status %d, got %d",
-			http.StatusInternalServerError,
+			http.StatusConflict,
 			rec.Code,
 		)
 	}

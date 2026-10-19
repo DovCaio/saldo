@@ -48,8 +48,8 @@ func (h *ImportHandler) ServeHTTP(
     defer file.Close()
 
     if err := h.useCase.Execute(r.Context(), file); err != nil {
+        writeError(w, err)
         log.Printf("import transactions failed: %+v", err)
-        http.Error(w, "could not import transactions", http.StatusInternalServerError)
         return
     }
 
