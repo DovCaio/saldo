@@ -16,7 +16,9 @@ import (
 	list_transaction_handler_adapter "github.com/DovCaio/saldo/internal/adapter/http/list_transactions"
 	summary_transaction_handler_adapter "github.com/DovCaio/saldo/internal/adapter/http/summary"
 	"github.com/DovCaio/saldo/internal/adapter/postgres"
-	"github.com/DovCaio/saldo/internal/application"
+	import_transaction "github.com/DovCaio/saldo/internal/application/import_transaction"
+	list_transactions "github.com/DovCaio/saldo/internal/application/list_transactions"
+	summary_transactions "github.com/DovCaio/saldo/internal/application/summary_transactions"
 	"github.com/DovCaio/saldo/internal/transaction"
 )
 
@@ -51,16 +53,16 @@ func main() {
 	service := transaction.NewService(repository)
 	parser := csv.NewParser()
 
-	importTransactions := application.NewImportTransactions(
+	importTransactions := import_transaction.NewImportTransactions(
 		parser,
 		service,
 	)
 
-	listTransactions := application.NewFindAllTransaction(
+	listTransactions := list_transactions.NewFindAllTransaction(
 		service,
 	)
 
-	summary := application.NewSummaryTransactions(
+	summary := summary_transactions.NewSummaryTransactions(
 		service,
 	)
 
