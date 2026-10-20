@@ -46,7 +46,7 @@ func (h *ListTransactionsHandler) ServeHTTP(
 		filter.Type = &txType
 	}
 
-	if value := query.Get("dateFrom"); value != "" {
+	if value := query.Get("date_from"); value != "" {
 		date, err := time.Parse("2006-01-02", value)
 		if err != nil {
 			http.Error(w, "invalid dateFrom", http.StatusBadRequest)
@@ -55,7 +55,7 @@ func (h *ListTransactionsHandler) ServeHTTP(
 		filter.DateFrom = &date
 	}
 
-	if value := query.Get("dateTo"); value != "" {
+	if value := query.Get("date_to"); value != "" {
 		date, err := time.Parse("2006-01-02", value)
 		if err != nil {
 			http.Error(w, "invalid dateTo", http.StatusBadRequest)
@@ -64,7 +64,7 @@ func (h *ListTransactionsHandler) ServeHTTP(
 		filter.DateTo = &date
 	}
 
-	if value := query.Get("minAmount"); value != "" {
+	if value := query.Get("min_amount"); value != "" {
 		amount, err := strconv.ParseInt(value, 10, 64)
 		if err != nil || amount < 0 {
 			http.Error(w, "invalid minAmount", http.StatusBadRequest)
@@ -73,7 +73,7 @@ func (h *ListTransactionsHandler) ServeHTTP(
 		filter.MinAmount = &amount
 	}
 
-	if value := query.Get("maxAmount"); value != "" {
+	if value := query.Get("max_amount"); value != "" {
 		amount, err := strconv.ParseInt(value, 10, 64)
 		if err != nil || amount < 0 {
 			http.Error(w, "invalid maxAmount", http.StatusBadRequest)

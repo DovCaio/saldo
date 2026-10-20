@@ -80,7 +80,7 @@ func TestListTransactionsHandler_ParsesFilters(t *testing.T) {
 
 	req := httptest.NewRequest(
 		http.MethodGet,
-		"/transactions?type=EXPENSE&minAmount=1000&maxAmount=5000&dateFrom=2026-10-01&dateTo=2026-10-14&limit=10&offset=5",
+		"/transactions?type=EXPENSE&min_amount=1000&max_amount=5000&date_from=2026-10-01&date_to=2026-10-14&limit=10&offset=5",
 		nil,
 	)
 	rec := httptest.NewRecorder()
@@ -144,7 +144,7 @@ func TestListTransactionsHandler_InvalidAmount(t *testing.T) {
 	mock := &listTransactionsUseCaseMock{}
 	handler := NewListTransactionsHandler(mock)
 
-	req := httptest.NewRequest(http.MethodGet, "/transactions?minAmount=abc", nil)
+	req := httptest.NewRequest(http.MethodGet, "/transactions?min_amount=abc", nil)
 	rec := httptest.NewRecorder()
 
 	handler.ServeHTTP(rec, req)
@@ -164,7 +164,7 @@ func TestListTransactionsHandler_InvalidDateRange(t *testing.T) {
 
 	req := httptest.NewRequest(
 		http.MethodGet,
-		"/transactions?dateFrom=2026-10-15&dateTo=2026-10-01",
+		"/transactions?date_from=2026-10-15&date_to=2026-10-01",
 		nil,
 	)
 	rec := httptest.NewRecorder()
@@ -186,7 +186,7 @@ func TestListTransactionsHandler_InvalidAmountRange(t *testing.T) {
 
 	req := httptest.NewRequest(
 		http.MethodGet,
-		"/transactions?minAmount=5000&maxAmount=1000",
+		"/transactions?min_amount=5000&max_amount=1000",
 		nil,
 	)
 	rec := httptest.NewRecorder()
