@@ -18,7 +18,7 @@ import (
 
 	listtransactions "github.com/DovCaio/saldo/internal/adapter/http/list_transactions"
 	"github.com/DovCaio/saldo/internal/adapter/postgres"
-	"github.com/DovCaio/saldo/internal/application"
+	application "github.com/DovCaio/saldo/internal/application/list_transactions"
 	"github.com/DovCaio/saldo/internal/transaction"
 )
 

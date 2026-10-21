@@ -3,18 +3,19 @@ package application
 import (
 	"context"
 
+	"github.com/DovCaio/saldo/internal/adapter/dto"
 	"github.com/DovCaio/saldo/internal/transaction"
 )
 
 type ListTransationUseCase interface {
-	Execute(ctx context.Context, filter transaction.TransactionFilter) ([]transaction.Transaction, error)
+	Execute(ctx context.Context, filter transaction.TransactionFilter) ([]dto.TransactionResponse, error)
 }
 
 type FindAllTransaction struct {
-	service *transaction.Service
+	service transaction.ServiceTransaction
 }
 
-func NewFindAllTransaction(service *transaction.Service) *FindAllTransaction {
+func NewFindAllTransaction(service transaction.ServiceTransaction) *FindAllTransaction {
 	return &FindAllTransaction{
 		service: service,
 	}
@@ -22,7 +23,7 @@ func NewFindAllTransaction(service *transaction.Service) *FindAllTransaction {
 }
 
 func (f *FindAllTransaction) Execute(ctx context.Context,
-	filter transaction.TransactionFilter) ([]transaction.Transaction, error) {
+	filter transaction.TransactionFilter) ([]dto.TransactionResponse, error) {
 
 		return f.service.FindAll(ctx, filter)
 

@@ -13,7 +13,7 @@ type ServiceTransaction interface {
     transactions []Transaction,
     ) error 
 
-    FindAll(ctx context.Context, filter TransactionFilter) ([]Transaction, error)
+    FindAll(ctx context.Context, filter TransactionFilter) ([]dto.TransactionResponse, error)
 
     Summary(ctx context.Context, filter TransactionSummaryFilter) (*dto.SummaryResponse, error)
 }
@@ -46,9 +46,24 @@ func (s *Service) ImportTransactions(
     return s.repository.SaveBatch(ctx, transactions)
 }
 
-func (s *Service) FindAll(ctx context.Context, filter TransactionFilter) ([]Transaction, error){
+func (s *Service) FindAll(ctx context.Context, filter TransactionFilter) ([]dto.TransactionResponse, error){
 
-    return s.repository.FindAll(ctx, filter)
+    response, err := s.repository.FindAll(ctx, filter)
+    if err != nil {
+        return nil, err
+    }
+
+    result := make([]dto.TransactionResponse, 0, len(response))
+
+    for _, value := range response {
+        res, err := dto.NewTransactionResponse(value.ID, value.Date, value.Description, value.AmountCents, string(value.Type))
+        if err != nil {
+            return nil, err
+        }
+        result = append(result, *res)
+    }
+
+    return result, nil
 
 }
 

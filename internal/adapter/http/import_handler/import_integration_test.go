@@ -18,7 +18,7 @@ import (
 	csvadapter "github.com/DovCaio/saldo/internal/adapter/csv"
 	import_http "github.com/DovCaio/saldo/internal/adapter/http/import_handler"
 	"github.com/DovCaio/saldo/internal/adapter/postgres"
-	"github.com/DovCaio/saldo/internal/application"
+	application "github.com/DovCaio/saldo/internal/application/import_transaction"
 	"github.com/DovCaio/saldo/internal/transaction"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )

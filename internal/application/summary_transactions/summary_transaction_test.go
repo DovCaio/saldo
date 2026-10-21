@@ -26,7 +26,7 @@ func (m *transactionSummaryMock) ImportTransactions(ctx context.Context, transac
 func (m *transactionSummaryMock) FindAll(
 	ctx context.Context,
 	filter transaction.TransactionFilter,
-) ([]transaction.Transaction, error) {
+) ([]dto.TransactionResponse, error) {
 
 	return nil, nil
 }

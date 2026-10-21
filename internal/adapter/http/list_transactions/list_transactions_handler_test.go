@@ -10,11 +10,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/DovCaio/saldo/internal/adapter/dto"
 	"github.com/DovCaio/saldo/internal/transaction"
 )
 
 type listTransactionsUseCaseMock struct {
-	transactions []transaction.Transaction
+	transactions []dto.TransactionResponse
 	err          error
 	gotFilter    transaction.TransactionFilter
 	called       bool
@@ -23,20 +24,20 @@ type listTransactionsUseCaseMock struct {
 func (m *listTransactionsUseCaseMock) Execute(
 	ctx context.Context,
 	filter transaction.TransactionFilter,
-) ([]transaction.Transaction, error) {
+) ([]dto.TransactionResponse, error) {
 	m.called = true
 	m.gotFilter = filter
 	return m.transactions, m.err
 }
 
 func TestListTransactionsHandler_Success(t *testing.T) {
-	expected := []transaction.Transaction{
+	expected := []dto.TransactionResponse{
 		{
 			ID:          "transaction-1",
 			Date:        time.Date(2026, 10, 14, 0, 0, 0, 0, time.UTC),
 			Description: "Salário",
 			AmountCents: 500000,
-			Type:        transaction.Income,
+			Type:        dto.Income,
 		},
 	}
 
@@ -60,7 +61,7 @@ func TestListTransactionsHandler_Success(t *testing.T) {
 
 	
 
-	var got []transaction.Transaction
+	var got []dto.TransactionResponse
 	if err := json.NewDecoder(rec.Body).Decode(&got); err != nil {
 		t.Fatalf("decoding response: %v", err)
 	}
@@ -220,7 +221,7 @@ func TestListTransactionsHandler_UseCaseError(t *testing.T) {
 
 func TestListTransactionsHandler_EmptyResult(t *testing.T) {
 	mock := &listTransactionsUseCaseMock{
-		transactions: []transaction.Transaction{},
+		transactions: []dto.TransactionResponse{},
 	}
 	handler := NewListTransactionsHandler(mock)
 
@@ -233,7 +234,7 @@ func TestListTransactionsHandler_EmptyResult(t *testing.T) {
 		t.Fatalf("expected status %d, got %d", http.StatusOK, rec.Code)
 	}
 
-	var got []transaction.Transaction
+	var got []dto.TransactionResponse
 	if err := json.NewDecoder(rec.Body).Decode(&got); err != nil {
 		t.Fatalf("decoding response: %v", err)
 	}
