@@ -10,25 +10,24 @@ import (
 	"github.com/DovCaio/saldo/internal/transaction"
 )
 
+var _ transaction.ServiceTransaction
+
 type transactionFinderMock struct {
 	gotContext context.Context
 	gotFilter  transaction.TransactionFilter
-	result     []transaction.Transaction
+	result     []dto.TransactionResponse
 	err        error
 	called     bool
 }
 
-func (m *transactionFinderMock)  SaveBatch(
-        ctx context.Context,
-        transactions []transaction.Transaction,
-    ) error {
+func (m *transactionFinderMock) ImportTransactions(ctx context.Context, transactions []transaction.Transaction) error {
 	return nil
 }
 
 func (m *transactionFinderMock) FindAll(
 	ctx context.Context,
 	filter transaction.TransactionFilter,
-) ([]transaction.Transaction, error) {
+) ([]dto.TransactionResponse, error) {
 	m.called = true
 	m.gotContext = ctx
 	m.gotFilter = filter
@@ -43,12 +42,12 @@ func (m *transactionFinderMock) Summary(
 }
 
 func TestFindAllTransaction_Execute_Success(t *testing.T) {
-	expected := []transaction.Transaction{
+	expected := []dto.TransactionResponse{
 		{
 			ID:          "transaction-1",
 			Description: "Salário",
 			AmountCents: 500000,
-			Type:        transaction.Income,
+			Type:        dto.Income,
 		},
 	}
 
@@ -56,8 +55,7 @@ func TestFindAllTransaction_Execute_Success(t *testing.T) {
 		result: expected,
 	}
 
-	service := transaction.NewService(mock)
-	useCase := NewFindAllTransaction(service)
+	useCase := NewFindAllTransaction(mock)
 
 	ctx := context.Background()
 	filter := transaction.TransactionFilter{
@@ -95,8 +93,7 @@ func TestFindAllTransaction_Execute_PropagatesError(t *testing.T) {
 		err: expectedErr,
 	}
 
-	service := transaction.NewService(mock)
-	useCase := NewFindAllTransaction(service)
+	useCase := NewFindAllTransaction(mock)
 
 	got, err := useCase.Execute(
 		context.Background(),
@@ -114,11 +111,10 @@ func TestFindAllTransaction_Execute_PropagatesError(t *testing.T) {
 
 func TestFindAllTransaction_Execute_EmptyResult(t *testing.T) {
 	mock := &transactionFinderMock{
-		result: []transaction.Transaction{},
+		result: []dto.TransactionResponse{},
 	}
 
-	service := transaction.NewService(mock)
-	useCase := NewFindAllTransaction(service)
+	useCase := NewFindAllTransaction(mock)
 
 	got, err := useCase.Execute(
 		context.Background(),

@@ -1,22 +1,20 @@
 package http
 
 import (
-	"context"
 	"errors"
-	"io"
 	"log"
 	"net/http"
+
+	import_transaction_application "github.com/DovCaio/saldo/internal/application/import_transaction"
 )
 
-type ImportTransactionsUseCase interface {
-    Execute(ctx context.Context, r io.Reader) error
-}
+
 
 type ImportHandler struct {
-    useCase ImportTransactionsUseCase
+    useCase import_transaction_application.ImportTransactionsUseCase
 }
 
-func NewImportHandler(useCase ImportTransactionsUseCase) *ImportHandler {
+func NewImportHandler(useCase import_transaction_application.ImportTransactionsUseCase) *ImportHandler {
     return &ImportHandler{
         useCase: useCase,
     }
@@ -50,8 +48,8 @@ func (h *ImportHandler) ServeHTTP(
     defer file.Close()
 
     if err := h.useCase.Execute(r.Context(), file); err != nil {
+        writeError(w, err)
         log.Printf("import transactions failed: %+v", err)
-        http.Error(w, "could not import transactions", http.StatusInternalServerError)
         return
     }
 

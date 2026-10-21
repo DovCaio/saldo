@@ -10,11 +10,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/DovCaio/saldo/internal/adapter/dto"
 	"github.com/DovCaio/saldo/internal/transaction"
 )
 
 type listTransactionsUseCaseMock struct {
-	transactions []transaction.Transaction
+	transactions []dto.TransactionResponse
 	err          error
 	gotFilter    transaction.TransactionFilter
 	called       bool
@@ -23,20 +24,20 @@ type listTransactionsUseCaseMock struct {
 func (m *listTransactionsUseCaseMock) Execute(
 	ctx context.Context,
 	filter transaction.TransactionFilter,
-) ([]transaction.Transaction, error) {
+) ([]dto.TransactionResponse, error) {
 	m.called = true
 	m.gotFilter = filter
 	return m.transactions, m.err
 }
 
 func TestListTransactionsHandler_Success(t *testing.T) {
-	expected := []transaction.Transaction{
+	expected := []dto.TransactionResponse{
 		{
 			ID:          "transaction-1",
 			Date:        time.Date(2026, 10, 14, 0, 0, 0, 0, time.UTC),
 			Description: "Salário",
 			AmountCents: 500000,
-			Type:        transaction.Income,
+			Type:        dto.Income,
 		},
 	}
 
@@ -60,7 +61,7 @@ func TestListTransactionsHandler_Success(t *testing.T) {
 
 	
 
-	var got []transaction.Transaction
+	var got []dto.TransactionResponse
 	if err := json.NewDecoder(rec.Body).Decode(&got); err != nil {
 		t.Fatalf("decoding response: %v", err)
 	}
@@ -80,7 +81,7 @@ func TestListTransactionsHandler_ParsesFilters(t *testing.T) {
 
 	req := httptest.NewRequest(
 		http.MethodGet,
-		"/transactions?type=EXPENSE&minAmount=1000&maxAmount=5000&dateFrom=2026-10-01&dateTo=2026-10-14&limit=10&offset=5",
+		"/transactions?type=EXPENSE&min_amount=1000&max_amount=5000&date_from=2026-10-01&date_to=2026-10-14&limit=10&offset=5",
 		nil,
 	)
 	rec := httptest.NewRecorder()
@@ -144,7 +145,7 @@ func TestListTransactionsHandler_InvalidAmount(t *testing.T) {
 	mock := &listTransactionsUseCaseMock{}
 	handler := NewListTransactionsHandler(mock)
 
-	req := httptest.NewRequest(http.MethodGet, "/transactions?minAmount=abc", nil)
+	req := httptest.NewRequest(http.MethodGet, "/transactions?min_amount=abc", nil)
 	rec := httptest.NewRecorder()
 
 	handler.ServeHTTP(rec, req)
@@ -164,7 +165,7 @@ func TestListTransactionsHandler_InvalidDateRange(t *testing.T) {
 
 	req := httptest.NewRequest(
 		http.MethodGet,
-		"/transactions?dateFrom=2026-10-15&dateTo=2026-10-01",
+		"/transactions?date_from=2026-10-15&date_to=2026-10-01",
 		nil,
 	)
 	rec := httptest.NewRecorder()
@@ -186,7 +187,7 @@ func TestListTransactionsHandler_InvalidAmountRange(t *testing.T) {
 
 	req := httptest.NewRequest(
 		http.MethodGet,
-		"/transactions?minAmount=5000&maxAmount=1000",
+		"/transactions?min_amount=5000&max_amount=1000",
 		nil,
 	)
 	rec := httptest.NewRecorder()
@@ -220,7 +221,7 @@ func TestListTransactionsHandler_UseCaseError(t *testing.T) {
 
 func TestListTransactionsHandler_EmptyResult(t *testing.T) {
 	mock := &listTransactionsUseCaseMock{
-		transactions: []transaction.Transaction{},
+		transactions: []dto.TransactionResponse{},
 	}
 	handler := NewListTransactionsHandler(mock)
 
@@ -233,7 +234,7 @@ func TestListTransactionsHandler_EmptyResult(t *testing.T) {
 		t.Fatalf("expected status %d, got %d", http.StatusOK, rec.Code)
 	}
 
-	var got []transaction.Transaction
+	var got []dto.TransactionResponse
 	if err := json.NewDecoder(rec.Body).Decode(&got); err != nil {
 		t.Fatalf("decoding response: %v", err)
 	}

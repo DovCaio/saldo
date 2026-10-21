@@ -14,8 +14,6 @@ const (
 	Expense TransactionType = "EXPENSE"
 )
 
-
-
 var (
 	ErrInvalidDate        = errors.New("invalid transaction date")
 	ErrEmptyDescription   = errors.New("description cannot be empty")

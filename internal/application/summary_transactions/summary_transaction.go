@@ -7,7 +7,7 @@ import (
 	"github.com/DovCaio/saldo/internal/transaction"
 )
 
-type Summary interface {
+type SummaryTransactionUseCase interface {
 	Execute(ctx context.Context, filter transaction.TransactionSummaryFilter) (*dto.SummaryResponse, error)
 }
 

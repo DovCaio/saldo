@@ -1,0 +1,361 @@
+openapi: 3.0.3
+
+info:
+  title: Saldo API
+  version: 1.0.0
+  description: API for personal finance management.
+
+servers:
+  - url: http://localhost:8080
+    description: Local environment
+
+paths:
+  /health:
+    get:
+      summary: Check API health
+      description: Verifies whether the API is operational.
+      operationId: healthCheck
+      responses:
+        "200":
+          description: API is operating normally.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+              example:
+                status: "UP"
+
+  /transactions:
+    get:
+      summary: List transactions
+      description: >
+        Returns transactions matching the specified filters,
+        with offset-based pagination.
+      operationId: listTransactions
+      parameters:
+        - name: date_from
+          in: query
+          required: false
+          description: Inclusive start date of the filter.
+          schema:
+            type: string
+            format: date
+          example: "2026-10-01"
+
+        - name: date_to
+          in: query
+          required: false
+          description: Inclusive end date of the filter.
+          schema:
+            type: string
+            format: date
+          example: "2026-10-31"
+
+        - name: type
+          in: query
+          required: false
+          description: Transaction type.
+          schema:
+            $ref: "#/components/schemas/TransactionType"
+
+        - name: min_amount
+          in: query
+          required: false
+          description: Minimum transaction amount, inclusive.
+          schema:
+            type: number
+            format: double
+            minimum: 0
+          example: 100.00
+
+        - name: max_amount
+          in: query
+          required: false
+          description: Maximum transaction amount, inclusive.
+          schema:
+            type: number
+            format: double
+            minimum: 0
+          example: 500.00
+
+        - name: offset
+          in: query
+          required: false
+          description: Number of transactions to skip.
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          example: 0
+
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of transactions to return.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          example: 20
+
+      responses:
+        "200":
+          description: Transactions retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionListResponse"
+
+        "400":
+          description: Invalid query parameters.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    post:
+      summary: Create a transaction
+      description: Registers a new financial transaction.
+      operationId: createTransaction
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTransactionRequest"
+            example:
+              date: "2026-10-21"
+              description: "Electricity bill"
+              amount: 185.90
+              type: expense
+
+      responses:
+        "201":
+          description: Transaction created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+
+        "400":
+          description: Invalid transaction data.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /transactions/summary:
+    get:
+      summary: Get transaction summary
+      description: >
+        Returns financial totals grouped by the requested period.
+      operationId: getSummaryOfTransactions
+      parameters:
+        - name: date_from
+          in: query
+          required: false
+          description: Inclusive start date of the summary.
+          schema:
+            type: string
+            format: date
+          example: "2026-01-01"
+
+        - name: date_to
+          in: query
+          required: false
+          description: Inclusive end date of the summary.
+          schema:
+            type: string
+            format: date
+          example: "2026-10-31"
+
+        - name: group_by
+          in: query
+          required: false
+          description: Time interval used to group the results.
+          schema:
+            type: string
+            enum:
+              - day
+              - month
+          example: month
+
+      responses:
+        "200":
+          description: Summary retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionSummaryResponse"
+
+        "400":
+          description: Invalid query parameters.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          example: UP
+
+    TransactionType:
+      type: string
+      enum:
+        - income
+        - expense
+
+    CreateTransactionRequest:
+      type: object
+      required:
+        - date
+        - description
+        - amount
+        - type
+      properties:
+        date:
+          type: string
+          format: date
+          description: Date of the transaction.
+          example: "2026-10-21"
+        description:
+          type: string
+          minLength: 1
+          description: Transaction description.
+          example: "Electricity bill"
+        amount:
+          type: number
+          format: double
+          exclusiveMinimum: 0
+          description: Positive transaction amount.
+          example: 185.90
+        type:
+          $ref: "#/components/schemas/TransactionType"
+
+    Transaction:
+      type: object
+      required:
+        - id
+        - date
+        - description
+        - amount
+        - type
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique transaction identifier.
+        date:
+          type: string
+          format: date
+        description:
+          type: string
+        amount:
+          type: number
+          format: double
+        type:
+          $ref: "#/components/schemas/TransactionType"
+
+    TransactionListResponse:
+      type: object
+      required:
+        - transactions
+      properties:
+        transactions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Transaction"
+        offset:
+          type: integer
+          minimum: 0
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+
+    TransactionSummaryResponse:
+      type: object
+      required:
+        - total_income
+        - total_expense
+        - balance
+        - series
+      properties:
+        total_income:
+          type: number
+          format: double
+          description: Total income for the selected period.
+        total_expense:
+          type: number
+          format: double
+          description: Total expenses for the selected period.
+        balance:
+          type: number
+          format: double
+          description: Difference between income and expenses.
+        series:
+          type: array
+          items:
+            $ref: "#/components/schemas/TransactionSummaryPeriod"
+
+    TransactionSummaryPeriod:
+      type: object
+      required:
+        - period
+        - income
+        - expense
+        - balance
+      properties:
+        period:
+          type: string
+          description: Grouping period, such as 2026-10 or 2026-10-21.
+          example: "2026-10"
+        income:
+          type: number
+          format: double
+        expense:
+          type: number
+          format: double
+        balance:
+          type: number
+          format: double
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Description of the error.
+          example: "Invalid query parameters."

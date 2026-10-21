@@ -1,25 +1,21 @@
 package summary
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"time"
 
-	"github.com/DovCaio/saldo/internal/adapter/dto"
+	summary_transaction_application "github.com/DovCaio/saldo/internal/application/summary_transactions"
 	"github.com/DovCaio/saldo/internal/transaction"
 )
 
 
-type SummaryTransactionUseCase interface {
-	Execute(ctx context.Context, filter transaction.TransactionSummaryFilter) (*dto.SummaryResponse, error)
-}
 
 type SummaryTransactionHandler struct {
-	useCase SummaryTransactionUseCase
+	useCase summary_transaction_application.SummaryTransactionUseCase
 }
 
-func NewSummaryTransactionHandler(useCase SummaryTransactionUseCase) *SummaryTransactionHandler{
+func NewSummaryTransactionHandler(useCase summary_transaction_application.SummaryTransactionUseCase) *SummaryTransactionHandler{
 	return &SummaryTransactionHandler{
 		useCase: useCase,
 	}
