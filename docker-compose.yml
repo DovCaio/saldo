@@ -1,4 +1,17 @@
 services:
+  backend:
+    build: .
+    container_name: backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://saldo:saldo@postgres:5432/saldo?sslmode=disable
+    ports:
+      - "8080:8080"
+    networks:
+      - saldo_network
+    depends_on:
+      - postgres
+
   postgres:
     image: postgres:17
     container_name: saldo-postgres
@@ -16,6 +29,8 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+    networks:
+      - saldo_network
 
   postgres_test:
     image: postgres:17
@@ -38,3 +53,6 @@ services:
 volumes:
   saldo_data:
   saldo_data_test:
+
+networks:
+  saldo_network:
