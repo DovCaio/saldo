@@ -14,6 +14,7 @@ import (
 	health_adapter "github.com/DovCaio/saldo/internal/adapter/http/health"
 	import_handler_adapter "github.com/DovCaio/saldo/internal/adapter/http/import_handler"
 	list_transaction_handler_adapter "github.com/DovCaio/saldo/internal/adapter/http/list_transactions"
+	"github.com/DovCaio/saldo/internal/adapter/http/middleware"
 	summary_transaction_handler_adapter "github.com/DovCaio/saldo/internal/adapter/http/summary"
 	"github.com/DovCaio/saldo/internal/adapter/postgres"
 	import_transaction "github.com/DovCaio/saldo/internal/application/import_transaction"
@@ -74,14 +75,17 @@ func main() {
 	mux.Handle("GET /transactions", listTransactionsHandler)
 	mux.Handle("GET /transactions/summary", summaryHandler)
 	
+	handler := middleware.CORS(mux)
+
 	server := &http.Server{
 		Addr: ":8080",
-		Handler: mux,
+		Handler: handler,
 	}
 
 	log.Println("saldo API running on :8080")
 
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
-	}	
+	}
+
 }
