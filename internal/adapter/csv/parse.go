@@ -23,30 +23,35 @@ func (p *Parser) Parse(
 	return ParseCSV(r)
 }
 
-func ParseCSV(r io.Reader) ([]transaction.Transaction, error) {
-	reader := csv.NewReader(r)
-
+func VerifyHeader(reader *csv.Reader) error {
 	header, err := reader.Read()
 	if err != nil {
 		if err == io.EOF {
-			return nil, fmt.Errorf("CSV is empty")
+			return CSVIsEmpty
 		}
-		return nil, fmt.Errorf("reading CSV header: %w", err)
+		return fmt.Errorf("reading CSV header: %w", err)
 	}
 
 	expectedHeader := []string{"date", "description", "amount", "type"}
 
 	if len(header) != len(expectedHeader) {
-		return nil, fmt.Errorf("invalid CSV header")
+		return InvalidCSVHeader
 	}
 
 	for i, expected := range expectedHeader {
 		if strings.TrimSpace(header[i]) != expected {
-			return nil, fmt.Errorf("invalid CSV header")
+			return InvalidCSVHeader
 		}
 	}
 
 	reader.FieldsPerRecord = len(expectedHeader)
+	return nil
+}
+
+func ParseCSV(r io.Reader) ([]transaction.Transaction, error) {
+	reader := csv.NewReader(r)
+
+	VerifyHeader(reader)
 
 	var transactions []transaction.Transaction
 
