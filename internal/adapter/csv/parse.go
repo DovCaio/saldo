@@ -18,45 +18,17 @@ func NewParser() *Parser {
 }
 
 func (p *Parser) Parse(
-	r io.Reader,
+	csvReader *csv.Reader,
 ) ([]transaction.Transaction, error) {
-	return ParseCSV(r)
+	return ParseCSV(csvReader)
 }
 
-func VerifyHeader(reader *csv.Reader) error {
-	header, err := reader.Read()
-	if err != nil {
-		if err == io.EOF {
-			return CSVIsEmpty
-		}
-		return fmt.Errorf("reading CSV header: %w", err)
-	}
-
-	expectedHeader := []string{"date", "description", "amount", "type"}
-
-	if len(header) != len(expectedHeader) {
-		return InvalidCSVHeader
-	}
-
-	for i, expected := range expectedHeader {
-		if strings.TrimSpace(header[i]) != expected {
-			return InvalidCSVHeader
-		}
-	}
-
-	reader.FieldsPerRecord = len(expectedHeader)
-	return nil
-}
-
-func ParseCSV(r io.Reader) ([]transaction.Transaction, error) {
-	reader := csv.NewReader(r)
-
-	VerifyHeader(reader)
+func ParseCSV(csvReader *csv.Reader) ([]transaction.Transaction, error) {
 
 	var transactions []transaction.Transaction
 
 	for line := 2; ; line++ {
-		record, err := reader.Read()
+		record, err := csvReader.Read()
 		if err == io.EOF {
 			break
 		}
@@ -92,6 +64,7 @@ func ParseCSV(r io.Reader) ([]transaction.Transaction, error) {
 
 	return transactions, nil
 }
+
 
 func parseAmountCents(value string) (int64, error) {
 	value = strings.TrimSpace(value)

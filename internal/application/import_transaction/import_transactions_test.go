@@ -2,8 +2,8 @@ package application
 
 import (
 	"context"
+	"encoding/csv"
 	"errors"
-	"io"
 	"reflect"
 	"testing"
 	"time"
@@ -19,7 +19,7 @@ type fakeParser struct {
 }
 
 func (f *fakeParser) Parse(
-	r io.Reader,
+	csvReader *csv.Reader,
 ) ([]transaction.Transaction, error) {
 	f.called = true
 
