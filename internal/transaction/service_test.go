@@ -61,6 +61,7 @@ func TestServiceRegister(t *testing.T) {
         "Supermercado",
         8590,
         Expense,
+		"external-id-123",
     )
     if err != nil {
         t.Fatal(err)
@@ -95,6 +96,7 @@ func TestServiceRegisterReturnsRepositoryError(t *testing.T) {
         "Supermercado",
         8590,
         Expense,
+		"external-id-123",
     )
     if err != nil {
         t.Fatal(err)

@@ -35,6 +35,7 @@ func NewTransaction(
 	description string,
 	amountCents int64,
 	transactionType TransactionType,
+	externalID string,
 ) (Transaction, error) {
 	if date.IsZero() {
 		return Transaction{}, ErrInvalidDate
@@ -57,5 +58,6 @@ func NewTransaction(
 		Description: description,
 		AmountCents: amountCents,
 		Type:        transactionType,
+		ExternalID:  externalID,
 	}, nil
 }

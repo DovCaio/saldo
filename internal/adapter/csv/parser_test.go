@@ -63,7 +63,7 @@ func TestParseCSV(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			csvReader := csv.NewReader(strings.NewReader(tt.input))
-			got, err := ParseCSV(csvReader)
+			got, err := ParseCSV(nil, csvReader) //TODO: have to remove this nil and pass a proper parser when the BankParser interface is implemented
 
 			if (err != nil) != tt.wantErr {
 				t.Fatalf("ParseCSV() error = %v, wantErr %v", err, tt.wantErr)
@@ -85,7 +85,7 @@ func TestParseCSVTransactionFields(t *testing.T) {
 2026-10-01,Salario,5000.00,INCOME`
 
 	csvReader := csv.NewReader(strings.NewReader(input))
-	got, err := ParseCSV(csvReader)
+	got, err := ParseCSV(nil, csvReader) //TODO: have to remove this nil and pass a proper parser when the BankParser interface is implemented
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

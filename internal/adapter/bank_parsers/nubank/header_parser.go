@@ -9,18 +9,18 @@ var headerMapping = map[string]string{
     "Data":          "date",
     "Descrição":     "description",
     "Valor":         "amount",
-    "Identificador": "type",
+    "Identificador": "external_id", //This is wrong, the type depends of the sinal of the amount, and the indentification is exaternal identification
 }
 
 type NubankParserIMPL struct {
-    content *[][]string
+    header *[]string
     columns map[string]int
 }
 
-func NewNubankParserIMPL(content *[][]string) (*NubankParserIMPL, error) {
+func NewNubankParserIMPL(header *[]string) (*NubankParserIMPL, error) {
     
     return &NubankParserIMPL{
-        content: content,
+        header: header,
         columns: make(map[string]int),
     }, nil
 }
@@ -32,16 +32,15 @@ func (p *NubankParserIMPL) Supports() bool {
         "date":        true,
         "description": true,
         "amount":      true,
-        "type":        true,
+        "external_id":        true,
     }
 
-    header := (*p.content)[0]
 
-    if len(header) != len(expected) {
+    if len(*p.header) != len(expected) {
         return false
     }
 
-    for i, header := range header {
+    for i, header := range *p.header {
         normalized := headerMapping[strings.TrimSpace(header)]
 
         if !expected[normalized] {
@@ -58,12 +57,8 @@ func (p *NubankParserIMPL) Supports() bool {
     return len(p.columns) == len(expected)
 }
 
-func (p *NubankParserIMPL) Parse() error {
-    header := (*p.content)[0]
 
-    for i, h := range header {
-        header[i] = headerMapping[strings.TrimSpace(h)]
-    }
-
-    return nil
+func (p *NubankParserIMPL) GetColumnIndex(columnName string) (int, bool) {
+    index, exists := p.columns[columnName]
+    return index, exists
 }

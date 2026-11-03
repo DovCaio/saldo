@@ -79,6 +79,7 @@ func TestNewTransaction(t *testing.T) {
 				tt.description,
 				tt.amountCents,
 				tt.kind,
+				"external-id-123",
 			)
 
 			if !errors.Is(err, tt.wantErr)	 {

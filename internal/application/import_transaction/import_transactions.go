@@ -5,7 +5,6 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/DovCaio/saldo/internal/adapter/bank_parsers/nubank"
 	"github.com/DovCaio/saldo/internal/transaction"
@@ -17,7 +16,7 @@ type ImportTransactionsUseCase interface {
 
 
 type TransactionParser interface {
-	Parse(csvReader *csv.Reader) ([]transaction.Transaction, error)
+	Parse(parser BankParser, csvReader *csv.Reader) ([]transaction.Transaction, error)
 }
 
 type ImportTransactions struct {
@@ -27,8 +26,8 @@ type ImportTransactions struct {
 
 type BankParser interface {
 
-	Parse() error
 	Supports() bool
+	GetColumnIndex(columnName string) (int, bool)
 }
 
 func NewImportTransactions(
@@ -48,9 +47,16 @@ func (uc *ImportTransactions) Execute(
 
 	csvReader := csv.NewReader(r)
 
-	content, err := csvReader.ReadAll()
+	header, err := csvReader.Read()
 
-	nubankParser, err := nubank.NewNubankParserIMPL(&content)
+	if err != nil {
+		if err == io.EOF {
+			return fmt.Errorf("CSV is empty")
+		}
+		return fmt.Errorf("reading CSV header: %w", err)
+	}
+
+	nubankParser, err := nubank.NewNubankParserIMPL(&header)
 	if err != nil {
 		return err
 	}
@@ -59,19 +65,16 @@ func (uc *ImportTransactions) Execute(
 		nubankParser,
 	};
 
+	var rigthBankParser BankParser
 
 	for i := range bankParsers {
 		if bankParsers[i].Supports(){
-			bankParsers[i].Parse()
+			rigthBankParser = bankParsers[i]
+			break
 		}
 	}
 
-	fmt.Printf("Parsed header: %v\n", content[0])
-
-	VerifyHeader(csvReader)
-
-
-	transactions, err := uc.parser.Parse(csvReader)
+	transactions, err := uc.parser.Parse(rigthBankParser, csvReader)
 	if err != nil {
 		return err
 	}
@@ -79,29 +82,4 @@ func (uc *ImportTransactions) Execute(
 	fmt.Println("Parsed transactions:", transactions)
 
 	return uc.service.ImportTransactions(ctx, transactions)
-}
-
-func VerifyHeader(reader *csv.Reader) error {
-	header, err := reader.Read()
-	if err != nil {
-		if err == io.EOF {
-			return fmt.Errorf("CSV is empty")
-		}
-		return fmt.Errorf("reading CSV header: %w", err)
-	}
-
-	expectedHeader := []string{"date", "description", "amount", "type"}
-
-	if len(header) != len(expectedHeader) {
-		return fmt.Errorf("invalid CSV header: expected %v, got %v", expectedHeader, header)
-	}
-
-	for i, expected := range expectedHeader {
-		if strings.TrimSpace(header[i]) != expected {
-			return fmt.Errorf("invalid CSV header: expected %v, got %v", expectedHeader, header)
-		}
-	}
-
-	reader.FieldsPerRecord = len(expectedHeader)
-	return nil
 }

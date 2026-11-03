@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	application "github.com/DovCaio/saldo/internal/application/import_transaction"
 	"github.com/DovCaio/saldo/internal/transaction"
 )
 
@@ -18,12 +19,13 @@ func NewParser() *Parser {
 }
 
 func (p *Parser) Parse(
+	parser application.BankParser,
 	csvReader *csv.Reader,
 ) ([]transaction.Transaction, error) {
-	return ParseCSV(csvReader)
+	return ParseCSV(parser, csvReader)
 }
 
-func ParseCSV(csvReader *csv.Reader) ([]transaction.Transaction, error) {
+func ParseCSV(parser application.BankParser, csvReader *csv.Reader) ([]transaction.Transaction, error) {
 
 	var transactions []transaction.Transaction
 
@@ -36,25 +38,55 @@ func ParseCSV(csvReader *csv.Reader) ([]transaction.Transaction, error) {
 			return nil, fmt.Errorf("reading CSV record %d: %w", line, err)
 		}
 
+		dateIndex, exists := parser.GetColumnIndex("date")
+		if !exists {
+			return nil, fmt.Errorf("date column not found in header")
+		}
+
 		date, err := time.Parse(
-			"2006-01-02",
-			strings.TrimSpace(record[0]),
+			"02/01/2006",
+			strings.TrimSpace(record[dateIndex]),
 		)
 		if err != nil {
 			return nil, fmt.Errorf("invalid date on record %d: %w", line, err)
 		}
 
-		amountCents, err := parseAmountCents(record[2])
+		amountIndex, exists := parser.GetColumnIndex("amount")
+		if !exists {
+			return nil, fmt.Errorf("amount column not found in header")
+		}
+
+		amountCents, err := parseAmountCents(record[amountIndex])
 		if err != nil {
 			return nil, fmt.Errorf("invalid amount on record %d: %w", line, err)
 		}
 
+		var transactionType transaction.TransactionType
+		if record[amountIndex][0] == '-' {
+			transactionType = transaction.Expense
+		} else {
+			transactionType = transaction.Income
+		}
+
+		descriptionIndex, exists := parser.GetColumnIndex("description")
+		if !exists {
+			return nil, fmt.Errorf("description column not found in header")
+		}
+
+		externalIDIndex, exists := parser.GetColumnIndex("external_id")
+		if !exists {
+			return nil, fmt.Errorf("external_id column not found in header")
+		}
+
+		externalID := strings.TrimSpace(record[externalIDIndex])
+
 		tx, err := transaction.NewTransaction(
 			date,
-			record[1],
+			record[descriptionIndex],
 			amountCents,
-			transaction.TransactionType(strings.TrimSpace(record[3])),
-		)
+			transactionType,
+			externalID)
+
 		if err != nil {
 			return nil, fmt.Errorf("invalid transaction on record %d: %w", line, err)
 		}
@@ -73,7 +105,7 @@ func parseAmountCents(value string) (int64, error) {
 	}
 
 	if strings.HasPrefix(value, "-") {
-		return 0, fmt.Errorf("amount cannot be negative")
+		value = value[1:]
 	}
 
 	parts := strings.Split(value, ".")
@@ -108,4 +140,11 @@ func parseAmountCents(value string) (int64, error) {
 	}
 
 	return whole*100 + cents, nil
+}
+
+func changeSinal(amountCents int64) int64 {
+	if amountCents < 0 {
+		return -amountCents
+	}
+	return amountCents
 }

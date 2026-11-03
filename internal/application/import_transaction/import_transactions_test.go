@@ -19,7 +19,8 @@ type fakeParser struct {
 }
 
 func (f *fakeParser) Parse(
-	csvReader *csv.Reader,
+	parser BankParser,
+	csvReader *csv.Reader,	
 ) ([]transaction.Transaction, error) {
 	f.called = true
 
