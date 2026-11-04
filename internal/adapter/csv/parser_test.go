@@ -39,8 +39,7 @@ func TestParseCSV(t *testing.T) {
 		"date":        0,
 		"description": 1,
 		"amount":      2,
-		"type":        3,
-		"external_id": 4,
+		"external_id": 3,
 	},
 },
 {
@@ -52,8 +51,7 @@ func TestParseCSV(t *testing.T) {
 		"date":        0,
 		"description": 1,
 		"amount":      2,
-		"type":        3,
-		"external_id": 4,
+		"external_id": 3,
 	},
 },
 {
@@ -64,8 +62,7 @@ func TestParseCSV(t *testing.T) {
 		"date":        0,
 		"description": 1,
 		"amount":      2,
-		"type":        3,
-		"external_id": 4,
+		"external_id": 3,
 	},
 },
 {
@@ -76,8 +73,7 @@ func TestParseCSV(t *testing.T) {
 		"date":        0,
 		"description": 1,
 		"amount":      2,
-		"type":        3,
-		"external_id": 4,
+		"external_id": 3,
 	},
 },
 {
@@ -88,8 +84,7 @@ func TestParseCSV(t *testing.T) {
 		"date":        0,
 		"description": 1,
 		"amount":      2,
-		"type":        3,
-		"external_id": 4,
+		"external_id": 3,
 	},
 },
 {
@@ -100,8 +95,7 @@ func TestParseCSV(t *testing.T) {
 		"date":        0,
 		"description": 1,
 		"amount":      2,
-		"type":        3,
-		"external_id": 4,
+		"external_id": 3,
 	},
 },
 {
@@ -112,7 +106,6 @@ func TestParseCSV(t *testing.T) {
 		"date":        0,
 		"description": 1,
 		"amount":      2,
-		"type":        3,
 	},
 },
 			}
@@ -149,8 +142,7 @@ func TestParseCSVTransactionFields(t *testing.T) {
 			"date":        0,
 			"description": 1,
 			"amount":      2,
-			"type":        3,
-			"external_id": 4,
+			"external_id": 3,
 		},
 	}
 	got, err := ParseCSV(bankParserMock, csvReader) 
