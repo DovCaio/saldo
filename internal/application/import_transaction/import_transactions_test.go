@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"errors"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -70,17 +71,19 @@ func (f *fakeRepository) Summary(
 
 
 func TestImportTransactionsExecute(t *testing.T) {
-	tests := []struct {
-		name         string
-		transactions []transaction.Transaction
-		parserError  error
+		tests := []struct {
+		name            string
+		input           string
+		transactions    []transaction.Transaction
+		parserError     error
 		repositoryError error
-		wantError    bool
-		wantSaved    int
-		wantRepoCalls int
+		wantError       bool
+		wantSaved       int
+		wantRepoCalls   int
 	}{
 		{
-			name: "imports parsed transactions",
+			name:  "imports parsed transactions",
+			input: "date,description,amount,type,external_id\n",
 			transactions: []transaction.Transaction{
 				{
 					Date:        time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC),
@@ -94,15 +97,18 @@ func TestImportTransactionsExecute(t *testing.T) {
 		},
 		{
 			name:        "propagates parser error",
+			input:       "date,description,amount,type,external_id\n",
 			parserError: errors.New("invalid CSV"),
 			wantError:   true,
 		},
 		{
-			name: "rejects empty import",
+			name:      "rejects empty import",
+			input:     "date,description,amount,type,external_id\n",
 			wantError: true,
 		},
 		{
 			name: "propagates repository error",
+			input: "date,description,amount,type,external_id\n",
 			transactions: []transaction.Transaction{
 				{
 					Date:        time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC),
@@ -130,10 +136,9 @@ func TestImportTransactionsExecute(t *testing.T) {
 
 			service := transaction.NewService(repo)
 			useCase := NewImportTransactions(parser, service)
-
 			err := useCase.Execute(
 				context.Background(),
-				nil,
+				strings.NewReader(tt.input),
 			)
 
 			if (err != nil) != tt.wantError {
