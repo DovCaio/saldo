@@ -79,7 +79,6 @@ func (uc *ImportTransactions) Execute(
 		return err
 	}
 
-	fmt.Println("Parsed transactions:", transactions)
 
 	return uc.service.ImportTransactions(ctx, transactions)
 }

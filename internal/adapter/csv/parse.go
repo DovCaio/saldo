@@ -94,6 +94,10 @@ func ParseCSV(parser application.BankParser, csvReader *csv.Reader) ([]transacti
 		transactions = append(transactions, tx)
 	}
 
+	if len(transactions) == 0 {
+		return nil, fmt.Errorf("no transactions found in CSV")
+	}
+
 	return transactions, nil
 }
 
@@ -140,11 +144,4 @@ func parseAmountCents(value string) (int64, error) {
 	}
 
 	return whole*100 + cents, nil
-}
-
-func changeSinal(amountCents int64) int64 {
-	if amountCents < 0 {
-		return -amountCents
-	}
-	return amountCents
 }
