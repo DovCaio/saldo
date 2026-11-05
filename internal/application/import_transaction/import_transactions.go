@@ -68,10 +68,14 @@ func (uc *ImportTransactions) Execute(
 	var rigthBankParser BankParser
 
 	for i := range bankParsers {
-		if bankParsers[i].Supports(){
+		if bankParsers[i].Supports(){ //Isso ta sendo null de vez enquanto
 			rigthBankParser = bankParsers[i]
 			break
 		}
+	}
+
+	if rigthBankParser == nil {
+		return fmt.Errorf("no supported bank parser found")
 	}
 
 	transactions, err := uc.parser.Parse(rigthBankParser, csvReader)

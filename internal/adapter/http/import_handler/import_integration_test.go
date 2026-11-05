@@ -113,9 +113,9 @@ func TestImportIntegration_PersistsTransactions(t *testing.T) {
 	})
 
 	csvContent := fmt.Sprintf(
-		"date,description,amount,type\n"+
-			"2026-10-01,%s,5000.00,INCOME\n"+
-			"2026-10-02,%s,150.50,EXPENSE\n",
+		"Data,Descrição,Valor,Identificador\n"+
+			"01/10/2026,%s,5000.00,ext-1\n"+
+			"02/10/2026,%s,-150.50,ext-2\n",
 		description1,
 		description2,
 	)
