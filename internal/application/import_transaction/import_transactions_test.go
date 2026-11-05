@@ -83,7 +83,7 @@ func TestImportTransactionsExecute(t *testing.T) {
 	}{
 		{
 			name:  "imports parsed transactions",
-			input: "date,description,amount,type,external_id\n",
+			input: "Data,Descrição,Valor,Identificador\n",
 			transactions: []transaction.Transaction{
 				{
 					Date:        time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC),
@@ -97,18 +97,18 @@ func TestImportTransactionsExecute(t *testing.T) {
 		},
 		{
 			name:        "propagates parser error",
-			input:       "date,description,amount,type,external_id\n",
+			input:       "Data,Descrição,Valor,Identificador\n",
 			parserError: errors.New("invalid CSV"),
 			wantError:   true,
 		},
 		{
 			name:      "rejects empty import",
-			input:     "date,description,amount,type,external_id\n",
+			input:     "Data,Descrição,Valor,Identificador\n",
 			wantError: true,
 		},
 		{
 			name: "propagates repository error",
-			input: "date,description,amount,type,external_id\n",
+			input: "Data,Descrição,Valor,Identificador\n",
 			transactions: []transaction.Transaction{
 				{
 					Date:        time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC),
